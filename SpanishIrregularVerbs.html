@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verb Conjugation - Practice</title>
+    <style>
+        body {
+            background-color: #1c3c61;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            margin: 0;
+        }
+
+        h1, h2 {
+            font-weight: 400;
+            margin-bottom: 20px;
+        }
+
+        h1 { font-size: 24px; }
+        h2 { font-size: 20px; border-bottom: 2px solid #356b9c; padding-bottom: 10px; width: 100%; }
+
+        .verb-highlight {
+            font-weight: bold;
+            color: #e08b7d;
+            text-transform: uppercase;
+        }
+
+        .verb-type {
+            font-size: 16px;
+            color: #b0bec5;
+            margin-left: 10px;
+            text-transform: none;
+            font-weight: normal;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background-color: #e08b7d;
+            color: #1c3c61;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover { background-color: #d17869; }
+        
+        .btn-secondary { background-color: #4fc3f7; }
+        .btn-secondary:hover { background-color: #29b6f6; }
+
+        .table-container {
+            width: 100%;
+            max-width: 1000px;
+            overflow-x: auto;
+        }
+
+        table {
+            border-collapse: collapse;
+            text-align: left;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        th, td { padding: 12px 15px; vertical-align: top; }
+        
+        th {
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .sub-header {
+            font-weight: normal;
+            font-size: 12px;
+            text-transform: none;
+            display: block;
+            margin-top: 4px;
+            color: #b0bec5;
+        }
+
+        .pronoun {
+            font-weight: normal;
+            font-size: 16px;
+            padding-right: 30px;
+            color: #b0bec5;
+            width: 80px;
+        }
+
+        input[type="text"] {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            font-size: 16px;
+            font-family: inherit;
+            width: 100%;
+            min-width: 130px;
+            padding: 4px;
+            outline: none;
+            transition: border-bottom 0.3s ease;
+        }
+
+        input[type="text"]:focus { border-bottom: 1px solid #e08b7d; }
+
+        .time-markers th {
+            color: #e08b7d;
+            font-size: 13px;
+            text-align: center;
+            padding-top: 25px;
+        }
+
+        .hl { color: #ff7043; font-weight: bold; }
+
+        #answers-container {
+            display: none;
+            width: 100%;
+            max-width: 1000px;
+            margin-top: 20px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <button onclick="randomizeVerb()">Random new verb</button>
+        <button onclick="showAnswers()" id="btn-show-answers" class="btn-secondary" style="display:none;">Show answer</button>
+    </div>
+
+    <h1>Fill in the table for the verb: <span id="verb-display" class="verb-highlight"></span></h1>
+
+    <div class="table-container">
+        <table id="practice-table">
+            <thead id="practice-thead"></thead>
+            <tbody id="practice-tbody"></tbody>
+            <tfoot id="practice-tfoot"></tfoot>
+        </table>
+    </div>
+
+    <div id="answers-container">
+        <h2>Answers: <span id="answer-verb-name" class="verb-highlight"></span><span id="answer-verb-type" class="verb-type"></span></h2>
+        <div class="table-container">
+            <table id="conjugationTable">
+                <thead id="answer-thead"></thead>
+                <tbody id="answer-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const verbDatabase = {
+            "ver": {
+                type: "(irregular verb)",
+                columns: [
+                    { title: "PRESENT" },
+                    { title: "PRESENT PROGRESSIVE" },
+                    { title: "PAST" },
+                    { title: "PRESENT PERFECT" },
+                    { title: "FUTURE" }
+                ],
+                conjugations: [
+                    { pronoun: "yo", forms: ["veo", "estoy viendo", "v<span class='hl'>i</span>", "he v<span class='hl'>ist</span>o", "veré"] },
+                    { pronoun: "tú", forms: ["ves", "estás viendo", "viste", "has v<span class='hl'>ist</span>o", "verás"] },
+                    { pronoun: "él / ella", forms: ["ve", "está viendo", "v<span class='hl'>io</span>", "ha v<span class='hl'>ist</span>o", "verá"] },
+                    { pronoun: "nts.", forms: ["vemos", "estamos viendo", "vimos", "hemos v<span class='hl'>ist</span>o", "veremos"] },
+                    { pronoun: "vts.", forms: ["v<span class='hl'>e</span>is", "estáis viendo", "visteis", "habéis v<span class='hl'>ist</span>o", "veréis"] },
+                    { pronoun: "ellos/as", forms: ["ven", "están viendo", "vieron", "han v<span class='hl'>ist</span>o", "verán"] }
+                ]
+            },
+            "decir": {
+                type: "(irregular verb)",
+                columns: [
+                    { title: "PRESENT" },
+                    { title: "PRESENT PROGRESSIVE" },
+                    { title: "PAST" },
+                    { title: "PRESENT PERFECT" },
+                    { title: "FUTURE" }
+                ],
+                conjugations: [
+                    { pronoun: "yo", forms: ["d<span class='hl'>ig</span>o", "estoy d<span class='hl'>i</span>ciendo", "d<span class='hl'>ij</span>e", "he d<span class='hl'>ich</span>o", "d<span class='hl'>ir</span>é"] },
+                    { pronoun: "tú", forms: ["d<span class='hl'>i</span>ces", "estás d<span class='hl'>i</span>ciendo", "d<span class='hl'>ij</span>iste", "has d<span class='hl'>ich</span>o", "d<span class='hl'>ir</span>ás"] },
+                    { pronoun: "él / ella", forms: ["d<span class='hl'>i</span>ce", "está d<span class='hl'>i</span>ciendo", "d<span class='hl'>ijo</span>", "ha d<span class='hl'>ich</span>o", "d<span class='hl'>ir</span>á"] },
+                    { pronoun: "nts.", forms: ["decimos", "estamos d<span class='hl'>i</span>ciendo", "d<span class='hl'>ij</span>imos", "hemos d<span class='hl'>ich</span>o", "d<span class='hl'>ir</span>emos"] },
+                    { pronoun: "vts.", forms: ["decís", "estáis d<span class='hl'>i</span>ciendo", "d<span class='hl'>ij</span>isteis", "habéis d<span class='hl'>ich</span>o", "d<span class='hl'>ir</span>éis"] },
+                    { pronoun: "ellos/as", forms: ["d<span class='hl'>i</span>cen", "están d<span class='hl'>i</span>ciendo", "d<span class='hl'>ij</span>eron", "han d<span class='hl'>ich</span>o", "d<span class='hl'>ir</span>án"] }
+                ]
+            },
+            "salir": {
+                type: "(irregular verb)",
+                columns: [
+                    { title: "PRESENT" },
+                    { title: "PAST" },
+                    { title: "PRESENT PERFECT" },
+                    { title: "FUTURE" }
+                ],
+                conjugations: [
+                    { pronoun: "yo", forms: ["sal<span class='hl'>g</span>o", "salí", "he salido", "sal<span class='hl'>dr</span>é"] },
+                    { pronoun: "tú", forms: ["sales", "saliste", "has salido", "sal<span class='hl'>dr</span>ás"] },
+                    { pronoun: "él / ella", forms: ["sale", "salió", "ha salido", "sal<span class='hl'>dr</span>á"] },
+                    { pronoun: "nts.", forms: ["salimos", "salimos", "hemos salido", "sal<span class='hl'>dr</span>emos"] },
+                    { pronoun: "vts.", forms: ["salís", "salisteis", "habéis salido", "sal<span class='hl'>dr</span>éis"] },
+                    { pronoun: "ellos/as", forms: ["salen", "salieron", "han salido", "sal<span class='hl'>dr</span>án"] }
+                ]
+            },
+            "hacer": {
+                type: "(irregular verb)",
+                columns: [
+                    { title: "PRESENT" },
+                    { title: "PRESENT PROGRESSIVE" },
+                    { title: "PAST" },
+                    { title: "PRESENT PERFECT" },
+                    { title: "FUTURE" }
+                ],
+                conjugations: [
+                    { pronoun: "yo", forms: ["h<span class='hl'>ag</span>o", "estoy haciendo", "h<span class='hl'>ic</span>e", "he h<span class='hl'>ech</span>o", "h<span class='hl'>ar</span>é"] },
+                    { pronoun: "tú", forms: ["haces", "estás haciendo", "h<span class='hl'>ic</span>iste", "has h<span class='hl'>ech</span>o", "h<span class='hl'>ar</span>ás"] },
+                    { pronoun: "él / ella", forms: ["hace", "está haciendo", "h<span class='hl'>iz</span>o", "ha h<span class='hl'>ech</span>o", "h<span class='hl'>ar</span>á"] },
+                    { pronoun: "nts.", forms: ["hacemos", "estamos haciendo", "h<span class='hl'>ic</span>imos", "hemos h<span class='hl'>ech</span>o", "h<span class='hl'>ar</span>emos"] },
+                    { pronoun: "vts.", forms: ["hacéis", "estáis haciendo", "h<span class='hl'>ic</span>isteis", "habéis h<span class='hl'>ech</span>o", "h<span class='hl'>ar</span>éis"] },
+                    { pronoun: "ellos/as", forms: ["hacen", "están haciendo", "h<span class='hl'>ic</span>ieron", "han h<span class='hl'>ech</span>o", "h<span class='hl'>ar</span>án"] }
+                ]
+            },
+            "poner": {
+                type: "(irregular verb)",
+                columns: [
+                    { title: "PRESENT" },
+                    { title: "PRESENT PROGRESSIVE" },
+                    { title: "PAST" },
+                    { title: "PRESENT PERFECT" },
+                    { title: "FUTURE" }
+                ],
+                conjugations: [
+                    { pronoun: "yo", forms: ["pon<span class='hl'>g</span>o", "estoy poniendo", "p<span class='hl'>us</span>e", "he p<span class='hl'>uest</span>o", "pon<span class='hl'>dr</span>é"] },
+                    { pronoun: "tú", forms: ["pones", "estás poniendo", "p<span class='hl'>us</span>iste", "has p<span class='hl'>uest</span>o", "pon<span class='hl'>dr</span>ás"] },
+                    { pronoun: "él / ella", forms: ["pone", "está poniendo", "p<span class='hl'>us</span>o", "ha p<span class='hl'>uest</span>o", "pon<span class='hl'>dr</span>á"] },
+                    { pronoun: "nts.", forms: ["ponemos", "estamos poniendo", "p<span class='hl'>us</span>imos", "hemos p<span class='hl'>uest</span>o", "pon<span class='hl'>dr</span>emos"] },
+                    { pronoun: "vts.", forms: ["ponéis", "estáis poniendo", "p<span class='hl'>us</span>isteis", "habéis p<span class='hl'>uest</span>o", "pon<span class='hl'>dr</span>éis"] },
+                    { pronoun: "ellos/as", forms: ["ponen", "están poniendo", "p<span class='hl'>us</span>ieron", "han p<span class='hl'>uest</span>o", "pon<span class='hl'>dr</span>án"] }
+                ]
+            },
+            "venir": {
+                type: "(irregular verb)",
+                columns: [
+                    { title: "PRESENT" },
+                    { title: "PRESENT PROGRESSIVE" },
+                    { title: "PAST" },
+                    { title: "PRESENT PERFECT" },
+                    { title: "FUTURE" }
+                ],
+                conjugations: [
+                    { pronoun: "yo", forms: ["ven<span class='hl'>g</span>o", "estoy v<span class='hl'>i</span>niendo", "v<span class='hl'>in</span>e", "he venido", "ven<span class='hl'>dr</span>é"] },
+                    { pronoun: "tú", forms: ["v<span class='hl'>i</span>enes", "estás v<span class='hl'>i</span>niendo", "v<span class='hl'>in</span>iste", "has venido", "ven<span class='hl'>dr</span>ás"] },
+                    { pronoun: "él / ella", forms: ["v<span class='hl'>i</span>ene", "está v<span class='hl'>i</span>niendo", "v<span class='hl'>in</span>o", "ha venido", "ven<span class='hl'>dr</span>á"] },
+                    { pronoun: "nts.", forms: ["venimos", "estamos v<span class='hl'>i</span>niendo", "v<span class='hl'>in</span>imos", "hemos venido", "ven<span class='hl'>dr</span>emos"] },
+                    { pronoun: "vts.", forms: ["venís", "estáis v<span class='hl'>i</span>niendo", "v<span class='hl'>in</span>isteis", "habéis venido", "ven<span class='hl'>dr</span>éis"] },
+                    { pronoun: "ellos/as", forms: ["v<span class='hl'>i</span>enen", "están v<span class='hl'>i</span>niendo", "v<span class='hl'>in</span>ieron", "han venido", "ven<span class='hl'>dr</span>án"] }
+                ]
+            },
+            "tener": {
+                type: "(irregular verb)",
+                columns: [
+                    { title: "PRESENT" },
+                    { title: "PRESENT PROGRESSIVE" },
+                    { title: "PAST" },
+                    { title: "PRESENT PERFECT" },
+                    { title: "FUTURE" }
+                ],
+                conjugations: [
+                    { pronoun: "yo", forms: ["ten<span class='hl'>g</span>o", "estoy teniendo", "t<span class='hl'>uv</span>e", "he tenido", "ten<span class='hl'>dr</span>é"] },
+                    { pronoun: "tú", forms: ["t<span class='hl'>i</span>enes", "estás teniendo", "t<span class='hl'>uv</span>iste", "has tenido", "ten<span class='hl'>dr</span>ás"] },
+                    { pronoun: "él / ella", forms: ["t<span class='hl'>i</span>ene", "está teniendo", "t<span class='hl'>uv</span>o", "ha tenido", "ten<span class='hl'>dr</span>á"] },
+                    { pronoun: "nts.", forms: ["tenemos", "estamos teniendo", "t<span class='hl'>uv</span>imos", "hemos tenido", "ten<span class='hl'>dr</span>emos"] },
+                    { pronoun: "vts.", forms: ["tenéis", "estáis teniendo", "t<span class='hl'>uv</span>isteis", "habéis tenido", "ten<span class='hl'>dr</span>éis"] },
+                    { pronoun: "ellos/as", forms: ["t<span class='hl'>i</span>enen", "están teniendo", "t<span class='hl'>uv</span>ieron", "han tenido", "ten<span class='hl'>dr</span>án"] }
+                ]
+            }
+        };
+
+        const timeMarkers = {
+            "PRESENT": "CADA DÍA",
+            "PRESENT PROGRESSIVE": "AHORA",
+            "PAST": "AYER",
+            "PRESENT PERFECT": "YA",
+            "FUTURE": "MAÑANA"
+        };
+
+        const pronounsList = ["yo", "tú", "él / ella", "nts.", "vts.", "ellos/as"];
+        const verbsKeys = Object.keys(verbDatabase);
+        let currentVerb = "";
+
+        /**
+         * Renders the practice table with empty input fields for a given verb.
+         * @param {string} verbKey - The key of the verb to be practiced.
+         */
+        function renderPracticeTable(verbKey) {
+            const data = verbDatabase[verbKey];
+            
+            let theadHtml = '<tr><th></th>';
+            let tfootHtml = '<tr class="time-markers"><th></th>';
+
+            data.columns.forEach(col => {
+                // Dodany warunek sprawdzający czy col.sub istnieje
+                const subText = col.sub ? `<span class="sub-header">${col.sub}</span>` : '';
+                theadHtml += `<th>${col.title}${subText}</th>`;
+                tfootHtml += `<th>${timeMarkers[col.title] || ''}</th>`;
+            });
+            theadHtml += '</tr>';
+            tfootHtml += '</tr>';
+
+            let tbodyHtml = '';
+            pronounsList.forEach(pronoun => {
+                tbodyHtml += `<tr><td class="pronoun">${pronoun}</td>`;
+                data.columns.forEach(() => {
+                    tbodyHtml += `<td><input type="text" autocomplete="off"></td>`;
+                });
+                tbodyHtml += `</tr>`;
+            });
+
+            document.getElementById('practice-thead').innerHTML = theadHtml;
+            document.getElementById('practice-tbody').innerHTML = tbodyHtml;
+            document.getElementById('practice-tfoot').innerHTML = tfootHtml;
+        }
+
+        /**
+         * Renders the answer table displaying the correct conjugations for a given verb.
+         * @param {string} verbKey - The key of the verb to display answers for.
+         */
+        function renderAnswerTable(verbKey) {
+            const data = verbDatabase[verbKey];
+            
+            let theadHtml = '<tr><th></th>';
+            data.columns.forEach(col => {
+                // Dodany warunek sprawdzający czy col.sub istnieje
+                const subText = col.sub ? `<span class="sub-header">${col.sub}</span>` : '';
+                theadHtml += `<th>${col.title}${subText}</th>`;
+            });
+            theadHtml += '</tr>';
+
+            let tbodyHtml = '';
+            data.conjugations.forEach(row => {
+                tbodyHtml += `<tr><td class="pronoun">${row.pronoun}</td>`;
+                row.forms.forEach(form => {
+                    tbodyHtml += `<td>${form}</td>`;
+                });
+                tbodyHtml += `</tr>`;
+            });
+
+            document.getElementById('answer-thead').innerHTML = theadHtml;
+            document.getElementById('answer-tbody').innerHTML = tbodyHtml;
+        }
+
+        /**
+         * Randomly selects a new verb from the database and initializes the UI.
+         */
+        function randomizeVerb() {
+            const randomIndex = Math.floor(Math.random() * verbsKeys.length);
+            currentVerb = verbsKeys[randomIndex];
+            
+            document.getElementById("verb-display").textContent = currentVerb;
+            document.getElementById("answer-verb-name").textContent = currentVerb;
+            document.getElementById("answer-verb-type").textContent = verbDatabase[currentVerb].type;
+
+            renderPracticeTable(currentVerb);
+
+            document.getElementById("answers-container").style.display = "none";
+            document.getElementById("btn-show-answers").style.display = "inline-block";
+        }
+
+        /**
+         * Displays the answers container and hides the "Show answers" button.
+         */
+        function showAnswers() {
+            renderAnswerTable(currentVerb);
+            document.getElementById("answers-container").style.display = "block";
+            document.getElementById("btn-show-answers").style.display = "none";
+        }
+
+        window.onload = randomizeVerb;
+    </script>
+
+</body>
+</html>
