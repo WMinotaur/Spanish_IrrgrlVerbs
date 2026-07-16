@@ -13,14 +13,24 @@ https://wminotaur.github.io/Spanish_IrrgrlVerbs/
     <td align="center"><b>Answer Mode</b></td>
   </tr>
   <tr>
-    <td>
+    <td width="50%">
       <a href="https://github.com/WMinotaur/Spanish_IrrgrlVerbs/blob/d1389249d2067d584f6011151d1f973345e8967a/screenshots/GeneralLook.png">
-        <img alt="NoAnswear" src="https://github.com/user-attachments/assets/eb702993-7171-4417-9164-33fe07ae6123" width="100%" />
+        <img alt="Practice Mode" src="screenshots/GeneralLook.png" width="100%" />
       </a>
     </td>
-    <td>
+    <td width="50%">
       <a href="https://github.com/WMinotaur/Spanish_IrrgrlVerbs/blob/d1389249d2067d584f6011151d1f973345e8967a/screenshots/GeneralLookAnswear.png">
-        <img alt="WithAnswear" src="https://github.com/user-attachments/assets/1d6881dd-20ca-4c99-97cd-cbcb84ceb02d" width="100%" />
+        <img alt="Answer Mode" src="screenshots/GeneralLookAnswer.png" width="100%" />
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><b>Answer Button</b></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2">
+      <a href="https://github.com/WMinotaur/Spanish_IrrgrlVerbs/blob/171966aa11deb163155fadb79a04b4ab7401cdd3/screenshots/AnswerButton.png">
+        <img alt="Answer Button" src="screenshots/AnswerButton.png" width="50%" />
       </a>
     </td>
   </tr>
