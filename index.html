@@ -61,6 +61,9 @@
         .btn-secondary { background-color: #4fc3f7; }
         .btn-secondary:hover { background-color: #29b6f6; }
 
+        .btn-check { background-color: #4caf50; color: #ffffff; }
+        .btn-check:hover { background-color: #43a047; }
+
         .table-container {
             width: 100%;
             max-width: 1000px;
@@ -110,7 +113,7 @@
             min-width: 130px;
             padding: 4px;
             outline: none;
-            transition: border-bottom 0.3s ease;
+            transition: border-bottom 0.3s ease, color 0.3s ease;
         }
 
         input[type="text"]:focus { border-bottom: 1px solid #e08b7d; }
@@ -143,7 +146,8 @@
 
     <div class="controls">
         <button onclick="randomizeVerb()">Random new verb</button>
-        <button onclick="showAnswers()" id="btn-show-answers" class="btn-secondary" style="display:none;">Show answer</button>
+        <button onclick="checkAnswers()" id="btn-check-answers" class="btn-check">Check answer</button>
+        <button onclick="showAnswers()" id="btn-show-answers" class="btn-secondary">Show answer</button>
     </div>
 
     <h1>Fill in the table for the verb: <span id="verb-display" class="verb-highlight"></span></h1>
@@ -307,10 +311,6 @@
         const verbsKeys = Object.keys(verbDatabase);
         let currentVerb = "";
 
-        /**
-         * Renders the practice table with empty input fields for a given verb.
-         * @param {string} verbKey - The key of the verb to be practiced.
-         */
         function renderPracticeTable(verbKey) {
             const data = verbDatabase[verbKey];
             
@@ -318,7 +318,6 @@
             let tfootHtml = '<tr class="time-markers"><th></th>';
 
             data.columns.forEach(col => {
-                // Dodany warunek sprawdzający czy col.sub istnieje
                 const subText = col.sub ? `<span class="sub-header">${col.sub}</span>` : '';
                 theadHtml += `<th>${col.title}${subText}</th>`;
                 tfootHtml += `<th>${timeMarkers[col.title] || ''}</th>`;
@@ -340,16 +339,11 @@
             document.getElementById('practice-tfoot').innerHTML = tfootHtml;
         }
 
-        /**
-         * Renders the answer table displaying the correct conjugations for a given verb.
-         * @param {string} verbKey - The key of the verb to display answers for.
-         */
         function renderAnswerTable(verbKey) {
             const data = verbDatabase[verbKey];
             
             let theadHtml = '<tr><th></th>';
             data.columns.forEach(col => {
-                // Dodany warunek sprawdzający czy col.sub istnieje
                 const subText = col.sub ? `<span class="sub-header">${col.sub}</span>` : '';
                 theadHtml += `<th>${col.title}${subText}</th>`;
             });
@@ -368,9 +362,6 @@
             document.getElementById('answer-tbody').innerHTML = tbodyHtml;
         }
 
-        /**
-         * Randomly selects a new verb from the database and initializes the UI.
-         */
         function randomizeVerb() {
             const randomIndex = Math.floor(Math.random() * verbsKeys.length);
             currentVerb = verbsKeys[randomIndex];
@@ -385,13 +376,46 @@
             document.getElementById("btn-show-answers").style.display = "inline-block";
         }
 
-        /**
-         * Displays the answers container and hides the "Show answers" button.
-         */
         function showAnswers() {
             renderAnswerTable(currentVerb);
             document.getElementById("answers-container").style.display = "block";
-            document.getElementById("btn-show-answers").style.display = "none";
+            document.getElementById("btn-show-answers").style.display = "none"; 
+        }
+
+
+        function cleanString(str) {
+            if (!str) return "";
+            let withoutHtml = str.replace(/<[^>]*>?/gm, '');
+            return withoutHtml
+                .toLowerCase()
+                .trim()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, ""); 
+        }
+
+        function checkAnswers() {
+            const tbody = document.getElementById('practice-tbody');
+            const rows = tbody.querySelectorAll('tr');
+            const data = verbDatabase[currentVerb];
+
+            rows.forEach((row, rowIndex) => {
+                const inputs = row.querySelectorAll('input');
+                const expectedForms = data.conjugations[rowIndex].forms;
+
+                inputs.forEach((input, colIndex) => {
+                    const userAnswer = cleanString(input.value);
+                    const expectedAnswer = cleanString(expectedForms[colIndex]);
+
+                
+                    if (userAnswer === expectedAnswer && userAnswer !== "") {
+                        input.style.color = "#4caf50";
+                        input.style.borderBottomColor = "#4caf50"; 
+                    } else if (userAnswer !== "") {
+                        input.style.color = "#f44336"; 
+                        input.style.borderBottomColor = "#f44336"; 
+                    }
+                });
+            });
         }
 
         window.onload = randomizeVerb;
