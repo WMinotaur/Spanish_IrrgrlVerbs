@@ -419,6 +419,38 @@
         }
 
         window.onload = randomizeVerb;
+        // Add event listener for arrow key navigation
+        document.getElementById('practice-tbody').addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        const currentInput = e.target;
+        
+
+        if (currentInput.tagName.toLowerCase() !== 'input') return;
+
+
+        const currentTd = currentInput.closest('td');
+        const currentTr = currentTd.closest('tr');
+        const tbody = currentTr.closest('tbody');
+
+        const cellIndex = Array.from(currentTr.children).indexOf(currentTd);
+        const rowIndex = Array.from(tbody.children).indexOf(currentTr);
+
+        let targetRow;
+        if (e.key === 'ArrowUp' && rowIndex > 0) {
+            targetRow = tbody.children[rowIndex - 1];
+        } 
+        else if (e.key === 'ArrowDown' && rowIndex < tbody.children.length - 1) {
+            targetRow = tbody.children[rowIndex + 1];
+        }
+        if (targetRow) {
+            const targetInput = targetRow.children[cellIndex].querySelector('input');
+            if (targetInput) {
+                targetInput.focus();
+                e.preventDefault(); 
+            }
+        }
+    }
+});
     </script>
 
 </body>
